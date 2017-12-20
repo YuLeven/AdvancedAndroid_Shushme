@@ -19,16 +19,26 @@ package com.example.android.shushme;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.Toast;
 
 import com.example.android.shushme.util.Util;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Places;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+    implements GoogleApiClient.ConnectionCallbacks,
+               GoogleApiClient.OnConnectionFailedListener {
 
     // Constants
     private static final String LOG_TAG = MainActivity.class.getCanonicalName();
@@ -54,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
         mAdapter = new PlaceListAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
 
+        // Bind this activity to the Google Api Client
+        bindToGoogleApiClient();
     }
 
     /**
@@ -85,4 +97,37 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
+    public void onAddNewLocationClicked(View view) {
+        boolean hasFineLocationAccess = Util.checkPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        String permissionGrantedVerb = hasFineLocationAccess ? "has" : "hasn't";
+        Toast.makeText(this, "The user " + permissionGrantedVerb + " granted network access permission", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Log.d(LOG_TAG, "Google API client connection established");
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d(LOG_TAG, "Google API client connection suspended");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.e(LOG_TAG, "Google API client connection failed");
+    }
+
+    /**
+     * Uses GoogleApiClient.Builder to tie this activity to the API client
+     */
+    private void bindToGoogleApiClient() {
+        new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .addApi(Places.GEO_DATA_API)
+                .enableAutoManage(this, this)
+                .build();
+    }
 }
