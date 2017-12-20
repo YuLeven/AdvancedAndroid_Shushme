@@ -7,4 +7,5 @@
     <string name="enable_geofences">Enable Geofences</string>
     <string name="location_permissions">Location Permissions</string>
     <string name="ringer_permissions">Ringer Permissions</string>
+    <string name="location_permission_needed">You must grant network permission before adding a new place.</string>
 </resources>

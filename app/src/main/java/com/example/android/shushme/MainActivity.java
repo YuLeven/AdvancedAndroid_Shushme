@@ -17,6 +17,8 @@ package com.example.android.shushme;
 */
 
 import android.Manifest;
+import android.content.ContentValues;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -30,11 +32,16 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.Toast;
 
+import com.example.android.shushme.provider.PlaceContract;
 import com.example.android.shushme.util.Util;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.places.ui.PlacePicker;
 
 public class MainActivity extends AppCompatActivity
     implements GoogleApiClient.ConnectionCallbacks,
@@ -43,6 +50,7 @@ public class MainActivity extends AppCompatActivity
     // Constants
     private static final String LOG_TAG = MainActivity.class.getCanonicalName();
     private static final int FINE_LOCATION_PERMISSION = 111;
+    private static final int PLACE_PICKER_REQUEST = 112;
 
     // Member variables
     private PlaceListAdapter mAdapter;
@@ -98,9 +106,46 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onAddNewLocationClicked(View view) {
-        boolean hasFineLocationAccess = Util.checkPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        String permissionGrantedVerb = hasFineLocationAccess ? "has" : "hasn't";
-        Toast.makeText(this, "The user " + permissionGrantedVerb + " granted network access permission", Toast.LENGTH_SHORT).show();
+        if (!Util.checkPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+            Toast.makeText(this, R.string.location_permission_needed, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Starts the place picker (Google provided activity that allows the user to search for places)
+        try {
+            PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
+            Intent intent = intentBuilder.build(this);
+            startActivityForResult(intent, PLACE_PICKER_REQUEST);
+        } catch (GooglePlayServicesRepairableException e) {
+            // Since this is mock app, we will do nothing
+            Log.e(LOG_TAG, e.getMessage());
+        } catch (GooglePlayServicesNotAvailableException e) {
+            // Since this is mock app, we will do nothing
+            Log.e(LOG_TAG, e.getMessage());
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PLACE_PICKER_REQUEST && resultCode == RESULT_OK) {
+            Place place = PlacePicker.getPlace(this, data);
+
+            // Return early if no place was picked
+            if (place == null) {
+                Log.d(LOG_TAG, "No place was selected");
+                return;
+            }
+
+            // Gets the needed place information
+            String placeName = place.getName().toString();
+            String placeAddress = place.getAddress().toString();
+            String placeID = place.getId();
+
+            // Persists the retrieved information to the database
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(PlaceContract.PlaceEntry.COLUMN_PLACE_ID, placeID);
+            getContentResolver().insert(PlaceContract.PlaceEntry.CONTENT_URI, contentValues);
+        }
     }
 
     @Override

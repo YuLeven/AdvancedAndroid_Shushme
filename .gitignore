@@ -40,3 +40,4 @@ project.properties
 .gradle
 build/
 keystore/shushme.keystore
+app/debug/output.json
