@@ -23,17 +23,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBuffer;
+
 public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.PlaceViewHolder> {
 
     private Context mContext;
+    private PlaceBuffer mPlaces;
 
     /**
      * Constructor using the context and the db cursor
      *
      * @param context the calling context/activity
      */
-    public PlaceListAdapter(Context context) {
-        this.mContext = context;
+    PlaceListAdapter(Context context) {
+        mContext = context;
     }
 
     /**
@@ -59,7 +63,24 @@ public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.Plac
      */
     @Override
     public void onBindViewHolder(PlaceViewHolder holder, int position) {
+        Place place = mPlaces.get(position);
+        holder.nameTextView.setText(place.getName().toString());
+        holder.addressTextView.setText(place.getAddress().toString());
+    }
 
+    /**
+     * Updates the places currently stored on the adapter
+     * with a new batch received from the Google maps API
+     * @param newPlaces - The places which will be showed next
+     */
+    void updatePlaces(PlaceBuffer newPlaces) {
+        // Returns early if no valid places were passed
+        if (newPlaces == null) return;
+
+        // Swap the current places and notifies the view
+        // so it reflects the new data
+        mPlaces = newPlaces;
+        notifyDataSetChanged();
     }
 
 
@@ -70,7 +91,8 @@ public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.Plac
      */
     @Override
     public int getItemCount() {
-        return 0;
+        if (mPlaces == null) return 0;
+        return mPlaces.getCount();
     }
 
     /**
@@ -81,7 +103,7 @@ public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.Plac
         TextView nameTextView;
         TextView addressTextView;
 
-        public PlaceViewHolder(View itemView) {
+        PlaceViewHolder(View itemView) {
             super(itemView);
             nameTextView = (TextView) itemView.findViewById(R.id.name_text_view);
             addressTextView = (TextView) itemView.findViewById(R.id.address_text_view);
