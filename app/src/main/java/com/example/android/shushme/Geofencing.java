@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResults;
 import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.Geofence;
@@ -44,7 +45,7 @@ public class Geofencing implements ResultCallback {
     // Limits the Geofence lifetime 10 hours (in miliseconds)
     private static final int GEOFENCE_TIMEOUT = 10 * 60 * 60 * 1000;
     // Determines the radius of the geofence (in meters)
-    private static final int GEOFENCE_RADIUS = 15;
+    private static final int GEOFENCE_RADIUS = 20;
 
     private GoogleApiClient mApiClient;
     private Context mContext;
@@ -69,7 +70,7 @@ public class Geofencing implements ResultCallback {
             LocationServices.GeofencingApi.addGeofences(
                     mApiClient,
                     getGeofencingRequest(),
-                    getGeofencePendingIntent()
+                    getGeofencingPendingIntent()
             ).setResultCallback(this);
         } catch (SecurityException sException) {
             Log.e(LOG_TAG, sException.getLocalizedMessage());
@@ -86,7 +87,7 @@ public class Geofencing implements ResultCallback {
         try {
             LocationServices.GeofencingApi.removeGeofences(
                     mApiClient,
-                    getGeofencePendingIntent()
+                    getGeofencingPendingIntent()
             ).setResultCallback(this);
         } catch (SecurityException sException) {
             Log.e(LOG_TAG, sException.getLocalizedMessage());
@@ -154,7 +155,7 @@ public class Geofencing implements ResultCallback {
      * and, only if it's null, build a new one before returning it.
      * @return - This class' mGeofencePendingIntent property
      */
-    private PendingIntent getGeofencePendingIntent() {
+    private PendingIntent getGeofencingPendingIntent() {
         // If we already have a PendingIntent set, return it
         if (mGeofencePendingIntent != null) return mGeofencePendingIntent;
 
