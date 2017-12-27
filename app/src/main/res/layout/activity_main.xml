@@ -29,7 +29,8 @@
             android:layout_marginTop="12dp"
             android:text="@string/settings_label"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textColor="@color/colorPrimaryDark" />
+            android:textColor="@color/colorPrimaryDark"
+            android:onClick="onRingerPermissionClicked"/>
 
         <View
             android:layout_width="fill_parent"

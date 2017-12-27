@@ -17,11 +17,14 @@ package com.example.android.shushme;
 */
 
 import android.Manifest;
+import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -108,13 +111,23 @@ public class MainActivity extends AppCompatActivity
         // Check if we were granted notifications permissions and, if so, lock the checkbox
         CheckBox locationPermission = (CheckBox) findViewById(R.id.location_permission_checkbox);
         boolean hasNotificationPermission = Util.checkPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-
         locationPermission.setEnabled(!hasNotificationPermission);
         locationPermission.setChecked(hasNotificationPermission);
+
+
+        // Check if were granted ringer permission (needed on SDK 24+) and
+        // lock the ringer option accordingly
+        CheckBox ringerPermission = (CheckBox) findViewById(R.id.ringer_permission_checkbox);
+        if (Build.VERSION.SDK_INT > 24 && Util.hasNotificationPermission(this)) {
+            ringerPermission.setChecked(false);
+        } else {
+            ringerPermission.setChecked(true);
+            ringerPermission.setEnabled(false);
+        }
     }
 
     /**
-     * This is called when the permission checkbox is toggled
+     * This is called when the location permission checkbox is toggled
      * @param view - The caller. We won't use it, but it is necessary so Android can find and call this method
      */
     public void onLocationPermissionClicked(View view) {
@@ -123,6 +136,17 @@ public class MainActivity extends AppCompatActivity
             new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
             FINE_LOCATION_PERMISSION
         );
+    }
+
+    /**
+     * Cakked when the ringer permission checkbox is toggled
+     * @param view - The caller. Won't be used here.
+     */
+    public void onRingerPermissionClicked(View view) {
+        if (Build.VERSION.SDK_INT >= 24) {
+            Intent intent = new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
+            startActivity(intent);
+        }
     }
 
     /**

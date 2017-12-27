@@ -8,4 +8,6 @@
     <string name="location_permissions">Location Permissions</string>
     <string name="ringer_permissions">Ringer Permissions</string>
     <string name="location_permission_needed">You must grant network permission before adding a new place.</string>
+    <string name="silent_mode_activated">Silent mode is now enabled.</string>
+    <string name="silent_mode_deactivated">Silent mode is now disabled.</string>
 </resources>

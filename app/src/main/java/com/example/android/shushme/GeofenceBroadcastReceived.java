@@ -1,9 +1,17 @@
 package com.example.android.shushme;
 
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.media.AudioManager;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+
+import com.example.android.shushme.util.Util;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingEvent;
 
 /**
  * Created by Yuri Levenhagen on 2017-12-27 as part
@@ -28,6 +36,7 @@ import android.util.Log;
 public class GeofenceBroadcastReceived extends BroadcastReceiver {
 
     public static final String LOG_TAG = GeofenceBroadcastReceived.class.getCanonicalName();
+    public static final int RINGER_NOTIFICATION_ID = 100;
 
     /**
      * This will be invoked when a broadcast is made once the user crosses the boundary of the GeoFence
@@ -36,6 +45,23 @@ public class GeofenceBroadcastReceived extends BroadcastReceiver {
      */
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i(LOG_TAG, "onReceived invoked");
+        GeofencingEvent event = GeofencingEvent.fromIntent(intent);
+
+        switch (event.getGeofenceTransition()) {
+            case Geofence.GEOFENCE_TRANSITION_ENTER:
+                Util.setRingerMode(context, AudioManager.RINGER_MODE_SILENT);
+                Util.notifyUserOfRingerChange(context, true);
+                break;
+            case Geofence.GEOFENCE_TRANSITION_DWELL:
+                Util.setRingerMode(context, AudioManager.RINGER_MODE_SILENT);
+                Util.notifyUserOfRingerChange(context, true);
+                break;
+            case Geofence.GEOFENCE_TRANSITION_EXIT:
+                Util.setRingerMode(context, AudioManager.RINGER_MODE_NORMAL);
+                Util.notifyUserOfRingerChange(context, false);
+                break;
+            default:
+                Log.i(LOG_TAG, "Unknown geofence transition received");
+        }
     }
 }
