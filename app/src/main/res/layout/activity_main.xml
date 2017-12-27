@@ -54,7 +54,8 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:text="@string/enable_geofences"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:onClick="onToggleEnableSwitch"/>
         </LinearLayout>
 
         <LinearLayout

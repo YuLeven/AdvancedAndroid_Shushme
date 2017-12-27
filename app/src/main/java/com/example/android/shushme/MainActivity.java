@@ -19,6 +19,7 @@ package com.example.android.shushme;
 import android.Manifest;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -30,6 +31,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import com.example.android.shushme.provider.PlaceContract;
@@ -62,6 +64,9 @@ public class MainActivity extends AppCompatActivity
     private PlaceListAdapter mAdapter;
     private RecyclerView mRecyclerView;
     private GoogleApiClient mClient;
+    private Geofencing mGeofencing;
+    private Switch mOnOffSwitch;
+    private boolean mIsEnabled;
 
     /**
      * Called when the activity is starting
@@ -79,8 +84,16 @@ public class MainActivity extends AppCompatActivity
         mAdapter = new PlaceListAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
 
+        // Sets the initial state of the switch view
+        mOnOffSwitch = (Switch) findViewById(R.id.enable_switch);
+        mIsEnabled = getPreferences(MODE_PRIVATE)
+                .getBoolean(getString(R.string.setting_enabled), false);
+        mOnOffSwitch.setChecked(mIsEnabled);
+
         // Bind this activity to the Google Api Client
         bindToGoogleApiClient();
+
+        mGeofencing = new Geofencing(this, mClient);
     }
 
     /**
@@ -112,6 +125,10 @@ public class MainActivity extends AppCompatActivity
         );
     }
 
+    /**
+     * Called when the user commits a new location. This will persist the location
+     * @param view - Not used in this method
+     */
     public void onAddNewLocationClicked(View view) {
         if (!Util.checkPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
             Toast.makeText(this, R.string.location_permission_needed, Toast.LENGTH_SHORT).show();
@@ -130,6 +147,24 @@ public class MainActivity extends AppCompatActivity
             // Since this is mock app, we will do nothing
             Log.e(LOG_TAG, e.getMessage());
         }
+    }
+
+    /**
+     * Called when the enabled switch is toggled
+     * @param view - Not used (it was register as mOnOffSwitch on the onCreate method)
+     */
+    public void onToggleEnableSwitch(View view) {
+        mIsEnabled = mOnOffSwitch.isChecked();
+        SharedPreferences.Editor preferencesEditor = getPreferences(MODE_PRIVATE).edit();
+        preferencesEditor.putBoolean(getString(R.string.setting_enabled), mIsEnabled);
+        preferencesEditor.apply();
+
+        if (mIsEnabled) {
+            mGeofencing.registerGeofences();
+        } else {
+            mGeofencing.unregisterGeofences();
+        }
+
     }
 
     @Override
@@ -213,6 +248,7 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onResult(@NonNull PlaceBuffer places) {
                     mAdapter.updatePlaces(places);
+                    if (mIsEnabled) mGeofencing.registerGeofences();
                 }
             });
 
