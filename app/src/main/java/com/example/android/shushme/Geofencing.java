@@ -128,9 +128,9 @@ public class Geofencing implements ResultCallback {
     @Override
     public void onResult(@NonNull Result result) {
         if (result.getStatus().isSuccess()) {
-            Log.d(LOG_TAG, "Successfully added new location");
+            Log.d(LOG_TAG, "Successfully added/removed geofences");
         } else {
-            Log.e(LOG_TAG, String.format("Error adding/removing geofence: %s",
+            Log.e(LOG_TAG, String.format("Error adding/removing geofences: %s",
                     result.getStatus().toString()));
         }
     }

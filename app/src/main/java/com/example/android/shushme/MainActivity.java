@@ -248,6 +248,7 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onResult(@NonNull PlaceBuffer places) {
                     mAdapter.updatePlaces(places);
+                    mGeofencing.updateGeofencesList(places);
                     if (mIsEnabled) mGeofencing.registerGeofences();
                 }
             });
